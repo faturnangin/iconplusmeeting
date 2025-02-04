@@ -46,7 +46,7 @@ const newForm = reactive({
   time_start: '',
   time_end: '',
   participant: 0,
-  foods:'',
+  foods:[],
   foods_value: 0
 });
 
@@ -73,6 +73,7 @@ const formatMeetingData = (reactiveData) => {
 };
 // const { data: rooms, refreshrooms } = api.getRooms();
 // const { data: departments, refreshdepartments } = api.getDepartments();
+const { data: offices, refresh } = api.getMasterOffice();
 const df = new DateFormatter('en-US', {
   dateStyle: 'long',
 })
@@ -105,6 +106,7 @@ const createMeeting = async () => {
     isLoading.value = false;
   }
 }
+
 </script>
 <template>
 <Toaster/>
@@ -128,24 +130,22 @@ const createMeeting = async () => {
       <CardContent>
         <div class="grid gap-4">
           <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-            
-            
             <div class="grid gap-2">
-              <Label for="room">Unit</Label>
-              <Select v-model="addForm.room">
-                <SelectTrigger id="room">
-                  <SelectValue placeholder="Select room" />
+              <Label for="unit">Unit</Label>
+              <Select v-model="addForm.unit">
+                <SelectTrigger id="unit">
+                  <SelectValue placeholder="Pilih Unit" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem v-for="room in rooms" :key="room.id" :value="room.room_name">
-                    {{ room.room_name }}
+                  <SelectItem v-for="office in offices" :key="office.id" :value="office.officeName">
+                    {{ office.officeName }}
                   </SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div class="grid gap-2">
               <Label for="room">Ruang Meeting</Label>
-              <Select v-model="addForm.room">
+              <Select v-model="newForm.room">
                 <SelectTrigger id="room">
                   <SelectValue placeholder="Select room" />
                 </SelectTrigger>
@@ -194,15 +194,15 @@ const createMeeting = async () => {
               <Label for="time_start">Time Start</Label>
               <Input
                   id="time_start"
-                  v-model="addForm.time_start"
+                  v-model="newForm.time_start"
                   type="time"
               />
             </div>
             <div class="grid gap-2">
-              <Label for="time_start">Time Ends</Label>
+              <Label for="time_ends">Time Ends</Label>
               <Input
-                  id="time_start"
-                  v-model="addForm.time_ends"
+                  id="time_ends"
+                  v-model="newForm.time_ends"
                   type="time"
               />
             </div>
@@ -217,6 +217,49 @@ const createMeeting = async () => {
                   type="text"
               />
             </div>
+
+            <div class="space-y-2">
+              <Label>Jenis Konsumsi</Label>
+              <label class="flex items-center space-x-3">
+                <input 
+                  type="checkbox"
+                  value="Snack Siang"
+                  v-model="newForm.foods"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                >
+                <span class="text-sm text-gray-700">Snack Siang</span>
+              </label>
+
+              <label class="flex items-center space-x-3">
+                <input 
+                  type="checkbox"
+                  value="Makan Siang"
+                  v-model="newForm.foods"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                >
+                <span class="text-sm text-gray-700">Makan Siang</span>
+              </label>
+
+              <label class="flex items-center space-x-3">
+                <input 
+                  type="checkbox"
+                  value="Snack Sore"
+                  v-model="newForm.foods"
+                  class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                >
+                <span class="text-sm text-gray-700">Snack Sore</span>
+              </label>
+            </div>
+
+            <div class="grid max-w-sm gap-2">
+              <Label for="department">Nominal Konsumsi</Label>
+              <Input
+                  id="participant"
+                  v-model="newForm.foods_value"
+                  type="text"
+              />
+            </div>
+            
           </div>
           
           <Button type="submit" @click="createMeeting" class="w-full">

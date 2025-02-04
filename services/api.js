@@ -7,6 +7,12 @@ const api = {
       default: () => []
     });
   },
+  getMasterOffice: () => {
+    return useFetch(`https://6666c7aea2f8516ff7a4e261.mockapi.io/api/dummy-data/masterOffice`, {
+      key: 'officeName',
+      default: () => []
+    });
+  },
 };
 
 export default api;
