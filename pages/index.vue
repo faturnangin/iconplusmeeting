@@ -1,603 +1,118 @@
 <script setup lang="ts">
-import {
-    CircleUser,
-    File,
-    Home,
-    LineChart,
-    ListFilter,
-    MoreHorizontal,
-    Package,
-    Package2,
-    PanelLeft,
-    PlusCircle,
-    Search,
-    Settings,
-    ShoppingCart,
-    Users2,
-} from 'lucide-vue-next'
 
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { Input } from '@/components/ui/input'
-import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
-} from '@/components/ui/breadcrumb'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import {
-    Table,
-    TableBody,
-    TableCell,
-    TableHead,
-    TableHeader,
-    TableRow,
-} from '@/components/ui/table'
-import {
-    Tabs,
-    TabsContent,
-    TabsList,
-    TabsTrigger,
-} from '@/components/ui/tabs'
-import {
-    Tooltip,
-    TooltipContent,
-    TooltipProvider,
-    TooltipTrigger,
-} from '@/components/ui/tooltip'
-import { Icon } from '@iconify/vue'
-const colorMode = useColorMode()
+useHead({
+  title: "Home - nMeeting",
+});
 
+definePageMeta({
+  layout: 'dashboard',
+});
+import Toaster from '@/components/ui/toast/Toaster.vue'
+import { useToast } from '@/components/ui/toast/use-toast'
+import { Separator } from '@/components/ui/separator'
+
+const { toast } = useToast()
+import { reactive, ref } from 'vue'
+import api from '~/services/api'
+import {
+    File,Plus,ListFilter, MinusCircle,Pencil,Settings
+} from 'lucide-vue-next';
+const isLoading = ref(false);
+const period = ref('Jan-2024');
+const { data: datas, refresh } = api.getData();
+import CircleChart from '~/components/CircleChart.vue'
+import HorizontalBarChart from '~/components/HorizontalBarChart.vue'
+const filteredData = computed(() => {
+  if (!datas.value) return null
+  return datas.value.find(item => item.period === period.value)
+})
+
+const calculateOccupancyPercentage = (room) => {
+  return Math.round((room.averageOccupancyPerMonth / room.capacity) * 100)
+}
+
+const calculateTotalConsumption = (consumptions) => {
+  return consumptions.reduce((total, item) => total + parseInt(item.totalPrice), 0)
+}
+
+const calculateConsumptionPercentage = (price, consumptions) => {
+  const total = calculateTotalConsumption(consumptions)
+  return Math.round((parseInt(price) / total) * 100)
+}
 </script>
 
 <template>
-    <div class="flex min-h-screen w-full flex-col bg-muted/40">
-        <aside class="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
-            <nav class="flex flex-col items-center gap-4 px-2 py-4">
-                <a
-href="#"
-                    class="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base">
-                    <Package2 class="h-4 w-4 transition-all group-hover:scale-110" />
-                    <span class="sr-only">Acme Inc</span>
-                </a>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <a
-href="#"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-                                <Home class="h-5 w-5" />
-                                <span class="sr-only">Dashboard</span>
-                            </a>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            Dashboard
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <a
-href="#"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:text-foreground md:h-8 md:w-8">
-                                <ShoppingCart class="h-5 w-5" />
-                                <span class="sr-only">Orders</span>
-                            </a>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            Orders
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <a
-href="#"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg bg-accent text-accent-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-                                <Package class="h-5 w-5" />
-                                <span class="sr-only">Products</span>
-                            </a>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            Products
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <a
-href="#"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-                                <Users2 class="h-5 w-5" />
-                                <span class="sr-only">Customers</span>
-                            </a>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            Customers
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <a
-href="#"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-                                <LineChart class="h-5 w-5" />
-                                <span class="sr-only">Analytics</span>
-                            </a>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            Analytics
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </nav>
-            <nav class="mt-auto flex flex-col items-center gap-4 px-2 py-4">
-                <TooltipProvider>
-                    <Tooltip>
-                        <TooltipTrigger as-child>
-                            <a
-href="#"
-                                class="flex h-9 w-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:text-foreground md:h-8 md:w-8">
-                                <Settings class="h-5 w-5" />
-                                <span class="sr-only">Settings</span>
-                            </a>
-                        </TooltipTrigger>
-                        <TooltipContent side="right">
-                            Settings
-                        </TooltipContent>
-                    </Tooltip>
-                </TooltipProvider>
-            </nav>
-        </aside>
-        <div class="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
-            <header
-                class="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
-                <Sheet>
-                    <SheetTrigger as-child>
-                        <Button size="icon" variant="outline" class="sm:hidden">
-                            <PanelLeft class="h-5 w-5" />
-                            <span class="sr-only">Toggle Menu</span>
-                        </Button>
-                    </SheetTrigger>
-                    <SheetContent side="left" class="sm:max-w-xs">
-                        <nav class="grid gap-6 text-lg font-medium">
-                            <a
-href="#"
-                                class="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base">
-                                <Package2 class="h-5 w-5 transition-all group-hover:scale-110" />
-                                <span class="sr-only">Acme Inc</span>
-                            </a>
-                            <a href="#" class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
-                                <Home class="h-5 w-5" />
-                                Dashboard
-                            </a>
-                            <a href="#" class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
-                                <ShoppingCart class="h-5 w-5" />
-                                Orders
-                            </a>
-                            <a href="#" class="flex items-center gap-4 px-2.5 text-foreground">
-                                <Package class="h-5 w-5" />
-                                Products
-                            </a>
-                            <a href="#" class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
-                                <Users2 class="h-5 w-5" />
-                                Customers
-                            </a>
-                            <a href="#" class="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground">
-                                <LineChart class="h-5 w-5" />
-                                Settings
-                            </a>
-                        </nav>
-                    </SheetContent>
-                </Sheet>
-                <Breadcrumb class="hidden md:flex">
-                    <BreadcrumbList>
-                        <BreadcrumbItem>
-                            <BreadcrumbLink as-child>
-                                <a href="#">Dashboard</a>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbLink as-child>
-                                <a href="#">Products</a>
-                            </BreadcrumbLink>
-                        </BreadcrumbItem>
-                        <BreadcrumbSeparator />
-                        <BreadcrumbItem>
-                            <BreadcrumbPage>All Products</BreadcrumbPage>
-                        </BreadcrumbItem>
-                    </BreadcrumbList>
-                </Breadcrumb>
-                <div class="relative ml-auto flex-1 md:grow-0">
-                    <Search class="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-                    <Input
-type="search" placeholder="Search..."
-                        class="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[320px]" />
-                </div>
-                <DropdownMenu>
-                    <DropdownMenuTrigger as-child>
-                        <Button variant="outline">
-                            <Icon
-icon="radix-icons:moon"
-                                class="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
-                            <Icon
-icon="radix-icons:sun"
-                                class="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
-                            <span class="sr-only">Toggle theme</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuItem @click="colorMode.preference = 'light'">
-                            Light
-                        </DropdownMenuItem>
-                        <DropdownMenuItem @click="colorMode.preference = 'dark'">
-                            Dark
-                        </DropdownMenuItem>
-                        <DropdownMenuItem @click="colorMode.preference = 'system'">
-                            System
-                        </DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-                <DropdownMenu>
-                    <DropdownMenuTrigger as-child>
-                        <Button variant="secondary" size="icon" class="rounded-full">
-                            <CircleUser class="h-5 w-5" />
-                            <span class="sr-only">Toggle user menu</span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Settings</DropdownMenuItem>
-                        <DropdownMenuItem>Support</DropdownMenuItem>
-                        <DropdownMenuSeparator />
-                        <DropdownMenuItem>Logout</DropdownMenuItem>
-                    </DropdownMenuContent>
-                </DropdownMenu>
-            </header>
-            <main class="grid flex-1 items-start gap-4 p-4 sm:px-6 sm:py-0 md:gap-8">
-                <Tabs default-value="all">
-                    <div class="flex items-center">
-                        <TabsList>
-                            <TabsTrigger value="all">
-                                All
-                            </TabsTrigger>
-                            <TabsTrigger value="active">
-                                Active
-                            </TabsTrigger>
-                            <TabsTrigger value="draft">
-                                Draft
-                            </TabsTrigger>
-                            <TabsTrigger value="archived" class="hidden sm:flex">
-                                Archived
-                            </TabsTrigger>
-                        </TabsList>
-                        <div class="ml-auto flex items-center gap-2">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger as-child>
-                                    <Button variant="outline" size="sm" class="h-7 gap-1">
-                                        <ListFilter class="h-3.5 w-3.5" />
-                                        <span class="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                            Filter
-                                        </span>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Filter by</DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem checked>
-                                        Active
-                                    </DropdownMenuItem>
-                                    <DropdownMenuItem>Draft</DropdownMenuItem>
-                                    <DropdownMenuItem>
-                                        Archived
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                            <Button size="sm" variant="outline" class="h-7 gap-1">
-                                <File class="h-3.5 w-3.5" />
-                                <span class="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                    Export
-                                </span>
-                            </Button>
-                            <Button size="sm" class="h-7 gap-1">
-                                <PlusCircle class="h-3.5 w-3.5" />
-                                <span class="sr-only sm:not-sr-only sm:whitespace-nowrap">
-                                    Add Product
-                                </span>
-                            </Button>
-                        </div>
-                    </div>
-                    <TabsContent value="all">
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Products</CardTitle>
-                                <CardDescription>
-                                    Manage your products and view their sales performance.
-                                </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <Table>
-                                    <TableHeader>
-                                        <TableRow>
-                                            <TableHead class="hidden w-[100px] sm:table-cell">
-                                                <span class="sr-only">img</span>
-                                            </TableHead>
-                                            <TableHead>Name</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead class="hidden md:table-cell">
-                                                Price
-                                            </TableHead>
-                                            <TableHead class="hidden md:table-cell">
-                                                Total Sales
-                                            </TableHead>
-                                            <TableHead class="hidden md:table-cell">
-                                                Created at
-                                            </TableHead>
-                                            <TableHead>
-                                                <span class="sr-only">Actions</span>
-                                            </TableHead>
-                                        </TableRow>
-                                    </TableHeader>
-                                    <TableBody>
-                                        <TableRow>
-                                            <TableCell class="hidden sm:table-cell">
-                                                <img
-alt="Product image" class="aspect-square rounded-md object-cover"
-                                                    height="64" src="./placeholder.svg" width="64">
-                                            </TableCell>
-                                            <TableCell class="font-medium">
-                                                Laser Lemonade Machine
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">
-                                                    Draft
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                $499.99
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                25
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                2023-07-12 10:42 AM
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger as-child>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell class="hidden sm:table-cell">
-                                                <img
-alt="Product image" class="aspect-square rounded-md object-cover"
-                                                    height="64" src="./placeholder.svg" width="64">
-                                            </TableCell>
-                                            <TableCell class="font-medium">
-                                                Hypernova Headphones
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">
-                                                    Active
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                $129.99
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                100
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                2023-10-18 03:21 PM
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger as-child>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell class="hidden sm:table-cell">
-                                                <img
-alt="Product image" class="aspect-square rounded-md object-cover"
-                                                    height="64" src="./placeholder.svg" width="64">
-                                            </TableCell>
-                                            <TableCell class="font-medium">
-                                                AeroGlow Desk Lamp
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">
-                                                    Active
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                $39.99
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                50
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                2023-11-29 08:15 AM
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger as-child>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell class="hidden sm:table-cell">
-                                                <img
-alt="Product image" class="aspect-square rounded-md object-cover"
-                                                    height="64" src="./placeholder.svg" width="64">
-                                            </TableCell>
-                                            <TableCell class="font-medium">
-                                                TechTonic Energy Drink
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="secondary">
-                                                    Draft
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                $2.99
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                0
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                2023-12-25 11:59 PM
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger as-child>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell class="hidden sm:table-cell">
-                                                <img
-alt="Product image" class="aspect-square rounded-md object-cover"
-                                                    height="64" src="./placeholder.svg" width="64">
-                                            </TableCell>
-                                            <TableCell class="font-medium">
-                                                Gamer Gear Pro Controller
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">
-                                                    Active
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                $59.99
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                75
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                2024-01-01 12:00 AM
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger as-child>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                        <TableRow>
-                                            <TableCell class="hidden sm:table-cell">
-                                                <img
-alt="Product image" class="aspect-square rounded-md object-cover"
-                                                    height="64" src="./placeholder.svg" width="64">
-                                            </TableCell>
-                                            <TableCell class="font-medium">
-                                                Luminous VR Headset
-                                            </TableCell>
-                                            <TableCell>
-                                                <Badge variant="outline">
-                                                    Active
-                                                </Badge>
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                $199.99
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                30
-                                            </TableCell>
-                                            <TableCell class="hidden md:table-cell">
-                                                2024-02-14 02:14 PM
-                                            </TableCell>
-                                            <TableCell>
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger as-child>
-                                                        <Button aria-haspopup="true" size="icon" variant="ghost">
-                                                            <MoreHorizontal class="h-4 w-4" />
-                                                            <span class="sr-only">Toggle menu</span>
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                                        <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                        <DropdownMenuItem>Delete</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    </TableBody>
-                                </Table>
-                            </CardContent>
-                            <CardFooter>
-                                <div class="text-xs text-muted-foreground">
-                                    Showing <strong>1-10</strong> of <strong>32</strong>
-                                    products
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </TabsContent>
-                </Tabs>
-            </main>
-        </div>
+<Toaster/>
+  <NuxtLayout>
+    <div class="flex items-center justify-between w-full">
+      <div className="pb-3 gap-3 border-b border-[#ECF0F2] flex items-center w-full">
+        <Settings class="w-8 h-8"/>
+        <span className="text-[#343A40] font-bold text-[18px]">DASHBOARD</span>
+      </div>
     </div>
+
+    <div class="flex flex-col max-w-xs gap-2">
+        <span className="text-xs text-[#4E4E4E]">Periode</span>
+        <Select v-model="period">
+          <SelectTrigger id="period">
+            <SelectValue placeholder="Select period" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem v-for="data in datas" :key="data.id" :value="data.period">
+              {{ data.period }}
+            </SelectItem>
+          </SelectContent>
+        </Select>
+    </div>
+    
+    <div className="w-full flex items-center justify-center">
+      <div className="flex flex-col w-full justify-center items-start gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
+              <div v-for="office in filteredData.data" :key="office.officeName">
+                <div class="flex gap-3 px-[6px] py-[6px]">
+                  <img src="/images/lightning.svg" alt="" />
+                  <span class="text-[#868E96] text-base font-bold">{{ office.officeName }}</span>
+                </div>
+                
+                <div class="flex flex-col gap-4">
+                  <div 
+                    v-for="room in office.detailSummary" 
+                    :key="room.roomName"
+                    class="flex min-w-[230px] flex-col p-3 bg-[#F2F2F2] dark:bg-neutral-950 rounded-[8px] gap-[10px]"
+                  >
+                    <span class="text-sm font-normal text-[#4E4E4E]">{{ room.roomName }}</span>
+                    <div class="flex items-center justify-between">
+                      <div class="flex flex-col">
+                        <span class="text-[11px]">Persentase Pemakaian</span>
+                        <span class="text-xl font-bold text-black dark:text-white">
+                          {{ calculateOccupancyPercentage(room) }}%
+                        </span>
+                      </div>
+                      <CircleChart :percentage="calculateOccupancyPercentage(room)" />
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-[11px]">Nominal Konsumsi</span>
+                      <span class="text-xl font-bold text-black">
+                        Rp {{ calculateTotalConsumption(room.totalConsumption).toLocaleString() }}
+                      </span>
+                      <div 
+                        v-for="consumption in room.totalConsumption" 
+                        :key="consumption.name"
+                        class="flex items-center gap-[21px]"
+                      >
+                        <span class="text-[10px] w-16 font-medium">{{ consumption.name }}</span>
+                        <HorizontalBarChart 
+                          :label="calculateConsumptionPercentage(consumption.totalPrice, room.totalConsumption)"
+                          :value="calculateConsumptionPercentage(consumption.totalPrice, room.totalConsumption)"
+                          :max-value="100"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+        </div>
+      </div>
+    </div>
+  </NuxtLayout>
 </template>
